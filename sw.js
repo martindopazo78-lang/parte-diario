@@ -3,7 +3,7 @@
 // Gestiona caché offline y actualizaciones de la app
 // ══════════════════════════════════════════════════════
 
-const CACHE_NAME = 'parte-diario-v1';
+const CACHE_NAME = 'parte-diario-v2';
 
 // Archivos que se cachean para funcionar offline
 const ASSETS = [
