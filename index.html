@@ -1,0 +1,1154 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Parte Diario · Telecom</title>
+
+<!-- PWA -->
+<link rel="manifest" href="manifest.json">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Parte Diario">
+<meta name="theme-color" content="#0F2E4A">
+<meta name="msapplication-TileColor" content="#0F2E4A">
+
+<!-- Iconos -->
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<!-- iOS splash screens (iPhone) -->
+<link rel="apple-touch-startup-image" href="icons/splash-640x1136.png" media="(device-width: 320px) and (device-height: 568px) and (-webkit-device-pixel-ratio: 2)">
+<link rel="apple-touch-startup-image" href="icons/splash-750x1334.png" media="(device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2)">
+<link rel="apple-touch-startup-image" href="icons/splash-1170x2532.png" media="(device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3)">
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --brand: #0F2E4A;
+    --brand-mid: #1A4A72;
+    --accent: #2A7DE1;
+    --accent-light: #E6F1FB;
+    --accent-border: #B5D4F4;
+    --success: #2D7A4F;
+    --success-bg: #E8F5EE;
+    --warn-bg: #FEF3E2;
+    --warn-border: #F9C74F;
+    --warn-text: #7D5A0A;
+    --bg: #F4F6F9;
+    --surface: #FFFFFF;
+    --surface2: #F0F3F7;
+    --border: rgba(0,0,0,0.09);
+    --border-mid: rgba(0,0,0,0.15);
+    --text: #0D1B2A;
+    --text2: #5A6A7A;
+    --text3: #9AAABB;
+    --radius: 12px;
+    --radius-sm: 8px;
+    --shadow: 0 1px 3px rgba(0,0,0,0.07), 0 4px 12px rgba(0,0,0,0.04);
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    font-size: 15px;
+  }
+
+  /* ── TOPBAR ── */
+  .topbar {
+    background: var(--brand);
+    color: white;
+    padding: 14px 18px 12px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .topbar-row { display: flex; align-items: center; justify-content: space-between; }
+  .topbar-logo { font-size: 16px; font-weight: 600; letter-spacing: -0.2px; }
+  .topbar-sub { font-size: 12px; opacity: 0.6; margin-top: 1px; }
+  .btn-logout {
+    background: rgba(255,255,255,0.12);
+    border: none; color: white;
+    font-size: 12px; padding: 5px 11px;
+    border-radius: 20px; cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+  }
+
+  /* ── TABS ── */
+  .nav-tabs {
+    display: flex;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    position: sticky;
+    top: 58px;
+    z-index: 99;
+  }
+  .nav-tab {
+    flex: 1; padding: 11px 4px;
+    font-size: 13px; font-weight: 500;
+    text-align: center; cursor: pointer;
+    color: var(--text2);
+    border-bottom: 2px solid transparent;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  .nav-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+  /* ── SCREENS ── */
+  .screen { padding: 16px; }
+
+  /* ── LOGIN ── */
+  #screen-login {
+    min-height: 100vh;
+    display: flex; flex-direction: column;
+    align-items: center; justify-content: center;
+    padding: 32px 24px;
+    background: var(--bg);
+  }
+  .login-icon {
+    width: 64px; height: 64px;
+    background: var(--brand);
+    border-radius: 18px;
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 14px;
+  }
+  .login-title { font-size: 22px; font-weight: 600; color: var(--text); margin-bottom: 4px; }
+  .login-sub { font-size: 14px; color: var(--text2); margin-bottom: 28px; }
+  .login-card {
+    width: 100%; max-width: 360px;
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 20px;
+    box-shadow: var(--shadow);
+  }
+  .login-footer { font-size: 11px; color: var(--text3); margin-top: 20px; }
+
+  /* ── CARDS ── */
+  .card {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    padding: 14px 16px;
+    margin-bottom: 12px;
+    box-shadow: var(--shadow);
+  }
+  .card-title {
+    font-size: 11px; font-weight: 600;
+    color: var(--text3); text-transform: uppercase;
+    letter-spacing: 0.7px; margin-bottom: 12px;
+  }
+
+  /* ── FORM ELEMENTS ── */
+  label { font-size: 13px; color: var(--text2); display: block; margin-bottom: 5px; margin-top: 12px; }
+  label:first-of-type { margin-top: 0; }
+
+  input[type=text], input[type=password], select, textarea {
+    width: 100%;
+    font-size: 14px; font-family: 'DM Sans', sans-serif;
+    padding: 9px 12px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border-mid);
+    background: var(--surface2);
+    color: var(--text);
+    appearance: none; -webkit-appearance: none;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s;
+  }
+  input:focus, select:focus, textarea:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(42,125,225,0.12);
+    background: white;
+  }
+  textarea { resize: none; line-height: 1.5; }
+  select { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%235A6A7A' stroke-width='2.5'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right 12px center; padding-right: 32px; }
+
+  .btn-primary {
+    width: 100%;
+    background: var(--brand); color: white;
+    border: none; border-radius: var(--radius-sm);
+    padding: 12px; font-size: 15px; font-weight: 600;
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+    transition: opacity 0.15s, transform 0.1s;
+  }
+  .btn-primary:active { opacity: 0.85; transform: scale(0.99); }
+
+  .btn-secondary {
+    width: 100%;
+    background: var(--surface); color: var(--text2);
+    border: 1px solid var(--border-mid);
+    border-radius: var(--radius-sm);
+    padding: 11px; font-size: 14px;
+    cursor: pointer; font-family: 'DM Sans', sans-serif;
+    margin-top: 8px;
+  }
+
+  /* ── EQUIPO CHIPS ── */
+  .equipo-chips { display: flex; flex-wrap: wrap; gap: 7px; margin-bottom: 10px; min-height: 32px; }
+  .chip {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--accent-light); border: 1px solid var(--accent-border);
+    border-radius: 20px; padding: 5px 10px 5px 7px;
+    font-size: 13px; color: var(--accent);
+  }
+  .chip-self { background: var(--brand); border-color: var(--brand); color: white; }
+  .chip-avatar {
+    width: 20px; height: 20px; border-radius: 50%;
+    background: var(--accent); color: white;
+    font-size: 9px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .chip-self .chip-avatar { background: rgba(255,255,255,0.2); }
+  .chip-remove {
+    background: none; border: none; color: var(--accent);
+    font-size: 16px; cursor: pointer; padding: 0; line-height: 1; margin-left: 1px;
+  }
+  .chip-self .chip-remove { color: rgba(255,255,255,0.6); }
+  .add-row { display: flex; gap: 8px; }
+  .add-row select { flex: 1; }
+  .btn-add-small {
+    background: var(--brand); color: white;
+    border: none; border-radius: var(--radius-sm);
+    padding: 0 14px; font-size: 13px; font-weight: 500;
+    cursor: pointer; white-space: nowrap;
+    font-family: 'DM Sans', sans-serif;
+  }
+  .info-note { font-size: 12px; color: var(--text3); margin-top: 7px; }
+
+  /* ── TRABAJOS GRID ── */
+  .trabajos-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 7px; }
+  .check-item {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--border);
+    background: var(--surface2);
+    font-size: 13px; cursor: pointer;
+    color: var(--text); user-select: none;
+    transition: all 0.12s;
+  }
+  .check-item.active {
+    background: var(--accent-light);
+    border-color: var(--accent-border);
+    color: var(--accent);
+  }
+  .check-box {
+    width: 17px; height: 17px; border-radius: 5px;
+    border: 1.5px solid var(--border-mid);
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: all 0.12s;
+  }
+  .check-item.active .check-box { background: var(--accent); border-color: var(--accent); }
+  .check-tick {
+    width: 8px; height: 5px;
+    border-left: 2px solid white; border-bottom: 2px solid white;
+    transform: rotate(-45deg) translateY(-1px);
+    display: none;
+  }
+  .check-item.active .check-tick { display: block; }
+
+  /* ── MATERIALES ── */
+  .material-row { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
+  .material-row input { flex: 1; }
+  .qty-input { width: 72px !important; flex: none !important; font-family: 'DM Mono', monospace; }
+  .btn-remove {
+    background: none; border: none; color: var(--text3);
+    font-size: 20px; cursor: pointer; padding: 0 2px; line-height: 1; flex-shrink: 0;
+  }
+  .btn-remove:hover { color: #e74c3c; }
+  .btn-add-dashed {
+    width: 100%; font-size: 13px; color: var(--accent);
+    background: none; border: 1px dashed var(--accent-border);
+    border-radius: var(--radius-sm); padding: 8px 12px;
+    cursor: pointer; margin-top: 4px;
+    font-family: 'DM Sans', sans-serif;
+    transition: background 0.12s;
+  }
+  .btn-add-dashed:hover { background: var(--accent-light); }
+
+  /* ── EDIT BANNER ── */
+  .edit-banner {
+    background: var(--warn-bg); border: 1px solid var(--warn-border);
+    border-radius: var(--radius-sm); padding: 9px 13px;
+    font-size: 13px; color: var(--warn-text);
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  /* ── HISTORIAL ── */
+  .hist-item {
+    background: var(--surface);
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--accent);
+    padding: 13px 14px; margin-bottom: 10px;
+    cursor: pointer; box-shadow: var(--shadow);
+    transition: transform 0.1s, box-shadow 0.1s;
+  }
+  .hist-item:active { transform: scale(0.99); }
+  .hist-meta { font-size: 12px; color: var(--text2); margin-bottom: 3px; }
+  .hist-project { font-size: 14px; font-weight: 600; color: var(--text); }
+  .hist-equipo { font-size: 12px; color: var(--text3); margin-top: 5px; display: flex; align-items: center; gap: 5px; }
+  .hist-tags { display: flex; flex-wrap: wrap; gap: 5px; margin-top: 8px; }
+  .tag {
+    font-size: 11px; padding: 3px 9px;
+    border-radius: 20px;
+    background: var(--accent-light); color: var(--accent);
+    font-weight: 500;
+  }
+
+  /* ── DETALLE ── */
+  .back-bar {
+    display: flex; align-items: center; gap: 8px;
+    padding: 11px 16px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    font-size: 14px; color: var(--accent); font-weight: 500;
+  }
+  .detail-section { margin-bottom: 16px; }
+  .detail-lbl {
+    font-size: 11px; font-weight: 600; color: var(--text3);
+    text-transform: uppercase; letter-spacing: 0.6px; margin-bottom: 7px;
+  }
+  .avatar-row { display: flex; flex-wrap: wrap; gap: 6px; }
+  .avatar-pill {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: var(--surface2); border: 1px solid var(--border);
+    border-radius: 20px; padding: 4px 11px 4px 6px;
+    font-size: 13px; color: var(--text);
+  }
+  .av {
+    width: 24px; height: 24px; border-radius: 50%;
+    background: var(--accent); color: white;
+    font-size: 10px; font-weight: 600;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .av.self { background: var(--brand); }
+  .mat-table { width: 100%; font-size: 13px; border-collapse: collapse; }
+  .mat-table td { padding: 6px 0; border-bottom: 1px solid var(--border); color: var(--text); }
+  .mat-table td:last-child { text-align: right; color: var(--text2); font-family: 'DM Mono', monospace; font-size: 12px; }
+  .mat-table tr:last-child td { border-bottom: none; }
+  .btn-edit {
+    width: 100%; display: flex; align-items: center; justify-content: center; gap: 8px;
+    background: var(--surface); color: var(--accent);
+    border: 1px solid var(--accent-border);
+    border-radius: var(--radius-sm); padding: 12px;
+    font-size: 14px; font-weight: 500; cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    margin-top: 6px; transition: background 0.12s;
+  }
+  .btn-edit:hover { background: var(--accent-light); }
+
+  /* ── SUCCESS ── */
+  #screen-success {
+    min-height: 100vh; display: flex;
+    flex-direction: column; align-items: center; justify-content: center;
+    padding: 32px; text-align: center; background: var(--bg);
+  }
+  .success-icon {
+    width: 72px; height: 72px; border-radius: 50%;
+    background: var(--success-bg);
+    display: flex; align-items: center; justify-content: center;
+    margin-bottom: 18px;
+  }
+
+  /* ── EMPTY STATE ── */
+  .empty-state { text-align: center; padding: 48px 24px; }
+  .empty-state p { font-size: 14px; color: var(--text2); margin-top: 10px; }
+
+  /* ── LOADING ── */
+  #screen-loading {
+    min-height: 100vh; display: flex;
+    align-items: center; justify-content: center;
+    background: var(--bg);
+  }
+  .spinner {
+    width: 28px; height: 28px; border: 3px solid var(--border);
+    border-top-color: var(--accent); border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+</style>
+</head>
+<body>
+
+<!-- ══════════════════════════════════════
+     PANTALLA: CARGANDO
+══════════════════════════════════════ -->
+<div id="screen-loading">
+  <div class="spinner"></div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PANTALLA: LOGIN
+══════════════════════════════════════ -->
+<div id="screen-login" style="display:none;">
+  <div class="login-icon">
+    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+      <path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/>
+    </svg>
+  </div>
+  <div class="login-title">Parte Diario</div>
+  <div class="login-sub">Gestión de trabajos en campo</div>
+  <div class="login-card">
+    <label>Usuario</label>
+    <input type="text" id="login-user" placeholder="Introduce tu usuario" autocomplete="username" />
+    <label>Contraseña</label>
+    <input type="password" id="login-pass" placeholder="••••••••" autocomplete="current-password" />
+    <div id="login-error" style="display:none; color:#c0392b; font-size:13px; margin-top:10px; text-align:center;"></div>
+    <button class="btn-primary" style="margin-top:16px;" onclick="doLogin()">Entrar</button>
+  </div>
+  <div class="login-footer">v1.0 · Infraestructuras Telecom</div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PANTALLA: APP PRINCIPAL
+══════════════════════════════════════ -->
+<div id="screen-app" style="display:none;">
+  <div class="topbar">
+    <div class="topbar-row">
+      <div>
+        <div class="topbar-logo" id="topbar-title">Parte Diario</div>
+        <div class="topbar-sub" id="topbar-sub">Cargando...</div>
+      </div>
+      <button class="btn-logout" onclick="doLogout()">Salir</button>
+    </div>
+  </div>
+  <div class="nav-tabs">
+    <div class="nav-tab active" id="tab-nuevo" onclick="switchTab('nuevo')">Nuevo parte</div>
+    <div class="nav-tab" id="tab-historial" onclick="switchTab('historial')">Historial</div>
+  </div>
+
+  <!-- PANEL: FORMULARIO -->
+  <div id="panel-nuevo" class="screen">
+    <div id="edit-banner" class="edit-banner" style="display:none;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Editando parte del <span id="edit-fecha-banner" style="font-weight:600;"></span>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Proyecto</div>
+      <input type="text" id="form-proyecto" placeholder="Escribe el nombre del proyecto..." autocomplete="off" />
+    </div>
+
+    <div class="card">
+      <div class="card-title">Equipo en obra</div>
+      <div class="equipo-chips" id="equipo-chips"></div>
+      <div class="add-row">
+        <select id="select-tecnico"><option value="">Añadir técnico...</option></select>
+        <button class="btn-add-small" onclick="addTecnico()">+ Añadir</button>
+      </div>
+      <p class="info-note">El parte quedará registrado para todos los técnicos del equipo.</p>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Trabajos realizados</div>
+      <div class="trabajos-grid" id="trabajos-grid">
+        <div class="check-item" data-trabajo="Fusiones" onclick="this.classList.toggle('active')"><div class="check-box"><div class="check-tick"></div></div>Fusiones</div>
+        <div class="check-item" data-trabajo="Tendido" onclick="this.classList.toggle('active')"><div class="check-box"><div class="check-tick"></div></div>Tendido</div>
+        <div class="check-item" data-trabajo="Obra civil" onclick="this.classList.toggle('active')"><div class="check-box"><div class="check-tick"></div></div>Obra civil</div>
+        <div class="check-item" data-trabajo="Replanteos" onclick="this.classList.toggle('active')"><div class="check-box"><div class="check-tick"></div></div>Replanteos</div>
+        <div class="check-item" data-trabajo="ERC" onclick="this.classList.toggle('active')"><div class="check-box"><div class="check-tick"></div></div>ERC</div>
+      </div>
+      <label style="margin-top:14px;">Observaciones</label>
+      <textarea id="form-obs" rows="3" placeholder="Detalles adicionales del trabajo..."></textarea>
+    </div>
+
+    <div class="card">
+      <div class="card-title">Materiales utilizados</div>
+      <div id="materiales-list"></div>
+      <button class="btn-add-dashed" onclick="addMat()">+ Añadir material</button>
+    </div>
+
+    <button class="btn-primary" id="btn-guardar" onclick="guardarParte()">Enviar parte del día</button>
+    <button class="btn-secondary" id="btn-cancelar" style="display:none;" onclick="cancelarEdicion()">Cancelar edición</button>
+    <div style="height:28px;"></div>
+  </div>
+
+  <!-- PANEL: HISTORIAL -->
+  <div id="panel-historial" style="display:none;">
+    <div id="panel-lista">
+      <div class="screen">
+        <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:14px;">
+          <span style="font-size:14px; font-weight:600;">Mis partes</span>
+          <span style="font-size:12px; color:var(--text3);" id="hist-count"></span>
+        </div>
+        <div id="historial-list"></div>
+        <div id="hist-empty" class="empty-state" style="display:none;">
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--text3)" stroke-width="1.5"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          <p>Aún no hay partes registrados.</p>
+        </div>
+        <div style="height:20px;"></div>
+      </div>
+    </div>
+
+    <div id="panel-detalle" style="display:none;">
+      <div class="back-bar" onclick="backToLista()">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><polyline points="15 18 9 12 15 6"/></svg>
+        Volver al historial
+      </div>
+      <div class="screen" id="detalle-content"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PANTALLA: ÉXITO
+══════════════════════════════════════ -->
+<div id="screen-success" style="display:none;">
+  <div class="success-icon">
+    <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="var(--success)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+  </div>
+  <div style="font-size:20px; font-weight:600; margin-bottom:6px;" id="success-title">Parte enviado</div>
+  <div style="font-size:14px; color:var(--text2); max-width:260px;" id="success-msg">El parte del día se ha guardado correctamente.</div>
+  <button class="btn-primary" style="max-width:260px; margin-top:28px;" onclick="nuevoParteDespues()">Nuevo parte</button>
+  <button class="btn-secondary" style="max-width:260px;" onclick="irHistorial()">Ver historial</button>
+</div>
+
+<script>
+// ══════════════════════════════════════
+// CONFIGURACIÓN
+// ══════════════════════════════════════
+
+// ✅ BUG 1 CORREGIDO: GAS_URL ahora tiene comillas (antes era un error de sintaxis JS)
+const GAS_URL = 'https://script.google.com/macros/s/AKfycbx_vgsJAdJ4RGV24Tg_riaXrlub0NztsIcHF3xW5_FdhpY_9XDZkkTKDwoMU5efkPQuGA/exec';
+
+// ══════════════════════════════════════
+// ESTADO GLOBAL
+// ══════════════════════════════════════
+let currentUser = null;
+let allTecnicos = [];
+let allProyectos = [];
+let historial = [];
+let addedTecnicos = new Set();
+
+// ✅ BUG 2 CORREGIDO: variable unificada como editingId (antes había editingId y editingRowId mezclados)
+let editingId = null;
+
+// ══════════════════════════════════════
+// INICIALIZACIÓN
+// ══════════════════════════════════════
+window.addEventListener('load', () => {
+  const saved = sessionStorage.getItem('parteUser');
+  if (saved) {
+    currentUser = JSON.parse(saved);
+    initApp();
+  } else {
+    show('screen-login');
+  }
+});
+
+function show(id) {
+  ['screen-loading','screen-login','screen-app','screen-success'].forEach(s => {
+    document.getElementById(s).style.display = s === id ? 'flex' : 'none';
+  });
+  if (id === 'screen-app') document.getElementById(id).style.display = 'block';
+}
+
+// ══════════════════════════════════════
+// LOGIN
+// ══════════════════════════════════════
+async function doLogin() {
+  const usuario = document.getElementById('login-user').value.trim();
+  const pass    = document.getElementById('login-pass').value;
+  if (!usuario || !pass) return;
+
+  show('screen-loading');
+  try {
+    const res = await gas({ action: 'login', usuario, pass });
+    if (res.ok) {
+      currentUser = res.user;
+      sessionStorage.setItem('parteUser', JSON.stringify(currentUser));
+      initApp();
+    } else {
+      show('screen-login');
+      const el = document.getElementById('login-error');
+      el.textContent = res.error || 'Usuario o contraseña incorrectos';
+      el.style.display = 'block';
+    }
+  } catch(e) {
+    show('screen-login');
+    document.getElementById('login-error').textContent = 'Error de conexión. Inténtalo de nuevo.';
+    document.getElementById('login-error').style.display = 'block';
+  }
+}
+
+document.addEventListener('keydown', e => {
+  if (e.key === 'Enter' && document.getElementById('screen-login').style.display !== 'none') doLogin();
+});
+
+function doLogout() {
+  sessionStorage.removeItem('parteUser');
+  currentUser = null;
+  document.getElementById('login-user').value = '';
+  document.getElementById('login-pass').value = '';
+  document.getElementById('login-error').style.display = 'none';
+  show('screen-login');
+}
+
+// ══════════════════════════════════════
+// INICIALIZAR APP TRAS LOGIN
+// ══════════════════════════════════════
+async function initApp() {
+  show('screen-app');
+  document.getElementById('topbar-sub').textContent = 'Hola, ' + currentUser.nombre;
+  resetForm();
+  switchTab('nuevo');
+
+  await cargarConfig();
+}
+
+async function cargarConfig() {
+  try {
+    const res = await gas({ action: 'getConfig' });
+    if (!res.ok) throw new Error(res.error || 'Error getConfig');
+    allTecnicos = res.tecnicos || [];
+    allProyectos = res.proyectos || [];
+    poblarSelectProyecto();
+    poblarSelectTecnicos();
+  } catch(e) {
+    console.error('Error cargando config', e);
+    // Mostrar aviso en el select para que el técnico sepa que algo falló
+    const sel = document.getElementById('select-tecnico');
+    sel.innerHTML = '<option value="">⚠ Error cargando técnicos — reintenta</option>';
+    sel.style.color = '#c0392b';
+    // Botón de reintento
+    const addRow = sel.closest('.add-row');
+    if (!document.getElementById('btn-retry-config')) {
+      const btn = document.createElement('button');
+      btn.id = 'btn-retry-config';
+      btn.className = 'btn-add-small';
+      btn.style.background = '#c0392b';
+      btn.textContent = '↺';
+      btn.title = 'Reintentar';
+      btn.onclick = async () => {
+        btn.remove();
+        sel.style.color = '';
+        sel.innerHTML = '<option value="">Cargando...</option>';
+        await cargarConfig();
+      };
+      addRow.appendChild(btn);
+    }
+  }
+}
+
+function poblarSelectProyecto() { return; // campo libre, no hace falta poblar
+  const sel = document.getElementById('form-proyecto');
+  sel.innerHTML = allProyectos.map(p => `<option value="${p}">${p}</option>`).join('');
+}
+
+function poblarSelectTecnicos() {
+  const sel = document.getElementById('select-tecnico');
+  sel.style.color = '';
+  // Normalizar a mayúsculas para evitar fallos de capitalización entre USUARIOS y TECNICOS
+  const miUsuario = String(currentUser.usuario).trim().toUpperCase();
+  sel.innerHTML = '<option value="">Añadir técnico...</option>' +
+    allTecnicos
+      .filter(t => String(t.usuario).trim().toUpperCase() !== miUsuario)
+      .map(t => `<option value="${t.usuario}|${t.nombre}|${t.iniciales}">${t.nombre}</option>`)
+      .join('');
+  // Re-deshabilitar los ya añadidos (por si se repobla tras edición)
+  addedTecnicos.forEach(val => {
+    const opt = sel.querySelector(`option[value="${val}"]`);
+    if (opt) opt.disabled = true;
+  });
+}
+
+// ══════════════════════════════════════
+// TABS
+// ══════════════════════════════════════
+function switchTab(tab) {
+  document.getElementById('tab-nuevo').classList.toggle('active', tab === 'nuevo');
+  document.getElementById('tab-historial').classList.toggle('active', tab === 'historial');
+  document.getElementById('panel-nuevo').style.display = tab === 'nuevo' ? 'block' : 'none';
+  document.getElementById('panel-historial').style.display = tab === 'historial' ? 'block' : 'none';
+  if (tab === 'historial') cargarHistorial();
+}
+
+// ══════════════════════════════════════
+// EQUIPO
+// ══════════════════════════════════════
+function renderSelfChip() {
+  const chips = document.getElementById('equipo-chips');
+  chips.innerHTML = `<div class="chip chip-self"><div class="chip-avatar">${currentUser.iniciales}</div>${currentUser.nombre} (tú)</div>`;
+}
+
+function addTecnico() {
+  const sel = document.getElementById('select-tecnico');
+  const val = sel.value;
+  if (!val || addedTecnicos.has(val)) { sel.value = ''; return; }
+  addedTecnicos.add(val);
+  const [usuario, nombre, iniciales] = val.split('|');
+  const chip = document.createElement('div');
+  chip.className = 'chip';
+  chip.dataset.val = val;
+  chip.innerHTML = `<div class="chip-avatar">${iniciales}</div>${nombre}<button class="chip-remove" onclick="removeTecnico(this,'${val}')">×</button>`;
+  document.getElementById('equipo-chips').appendChild(chip);
+  sel.value = '';
+  sel.querySelector(`option[value="${val}"]`).disabled = true;
+}
+
+function removeTecnico(btn, val) {
+  addedTecnicos.delete(val);
+  btn.closest('.chip').remove();
+  const opt = document.querySelector(`#select-tecnico option[value="${val}"]`);
+  if (opt) opt.disabled = false;
+}
+
+function getEquipo() {
+  const equipo = [{ usuario: currentUser.usuario, nombre: currentUser.nombre, iniciales: currentUser.iniciales }];
+  addedTecnicos.forEach(val => {
+    const [usuario, nombre, iniciales] = val.split('|');
+    equipo.push({ usuario, nombre, iniciales });
+  });
+  return equipo;
+}
+
+// ══════════════════════════════════════
+// MATERIALES
+// ══════════════════════════════════════
+function addMat(desc = '', qty = '') {
+  const row = document.createElement('div');
+  row.className = 'material-row';
+  row.innerHTML = `<input type="text" placeholder="Descripción del material" value="${desc}" /><input type="text" class="qty-input" placeholder="Cant." value="${qty}" /><button class="btn-remove" onclick="this.closest('.material-row').remove()">×</button>`;
+  document.getElementById('materiales-list').appendChild(row);
+  if (!desc) row.querySelector('input').focus();
+}
+
+function getMateriales() {
+  return [...document.querySelectorAll('#materiales-list .material-row')]
+    .map(r => ({ desc: r.querySelectorAll('input')[0].value.trim(), qty: r.querySelectorAll('input')[1].value.trim() }))
+    .filter(m => m.desc);
+}
+
+// ══════════════════════════════════════
+// GUARDAR / EDITAR PARTE
+// ══════════════════════════════════════
+async function guardarParte() {
+  const proyectoVal = document.getElementById('form-proyecto').value.trim();
+  if (!proyectoVal) { alert('Introduce el nombre del proyecto.'); document.getElementById('form-proyecto').focus(); return; }
+
+  const trabajos = [...document.querySelectorAll('.check-item.active')].map(el => el.dataset.trabajo);
+  if (trabajos.length === 0) { alert('Selecciona al menos un trabajo realizado.'); return; }
+
+  const parte = {
+    proyecto:   document.getElementById('form-proyecto').value,
+    equipo:     getEquipo(),
+    trabajos,
+    obs:        document.getElementById('form-obs').value.trim(),
+    materiales: getMateriales(),
+    usuarioActual: currentUser.usuario,
+    rolActual: currentUser.rol
+  };
+
+  const btn = document.getElementById('btn-guardar');
+  btn.textContent = 'Guardando...';
+  btn.disabled = true;
+
+  try {
+    if (editingId !== null) {
+      await gas({ action: 'editarParte', rowId: editingId, ...parte });
+      show('screen-success');
+      document.getElementById('success-title').textContent = 'Cambios guardados';
+      document.getElementById('success-msg').textContent = 'El parte se ha actualizado correctamente.';
+    } else {
+      await gas({ action: 'guardarParte', fecha: hoyFormatted(), ...parte });
+      show('screen-success');
+      document.getElementById('success-title').textContent = 'Parte enviado';
+      document.getElementById('success-msg').textContent = 'El parte del día se ha guardado correctamente.';
+    }
+    resetForm();
+  } catch(e) {
+    alert('Error al guardar. Comprueba la conexión e inténtalo de nuevo.');
+  } finally {
+    btn.textContent = editingId !== null ? 'Guardar cambios' : 'Enviar parte del día';
+    btn.disabled = false;
+  }
+}
+
+function resetForm() {
+  editingId = null;
+  addedTecnicos.clear();
+  document.getElementById('form-obs').value = '';
+  document.getElementById('materiales-list').innerHTML = '';
+  document.querySelectorAll('.check-item').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('#select-tecnico option').forEach(o => o.disabled = false);
+  // Si el select estaba vacío (fallo de carga), intentar repoblar
+  if (allTecnicos.length === 0) cargarConfig();
+  renderSelfChip();
+  document.getElementById('edit-banner').style.display = 'none';
+  document.getElementById('btn-cancelar').style.display = 'none';
+  document.getElementById('btn-guardar').textContent = 'Enviar parte del día';
+  document.getElementById('topbar-title').textContent = 'Parte Diario';
+}
+
+function cancelarEdicion() {
+  resetForm();
+}
+
+function nuevoParteDespues() {
+  show('screen-app');
+  switchTab('nuevo');
+}
+
+function irHistorial() {
+  show('screen-app');
+  switchTab('historial');
+}
+
+// ══════════════════════════════════════
+// HISTORIAL
+// ══════════════════════════════════════
+async function cargarHistorial() {
+  document.getElementById('historial-list').innerHTML = '<div style="text-align:center;padding:32px;color:var(--text3);font-size:13px;">Cargando...</div>';
+  document.getElementById('panel-lista').style.display = 'block';
+  document.getElementById('panel-detalle').style.display = 'none';
+  try {
+    const res = await gas({ action: 'getHistorial', usuario: currentUser.usuario });
+    historial = res.partes || [];
+    renderHistorial();
+  } catch(e) {
+    document.getElementById('historial-list').innerHTML = '<div style="text-align:center;padding:32px;color:#c0392b;font-size:13px;">Error cargando el historial.</div>';
+  }
+}
+
+function renderHistorial() {
+  const list = document.getElementById('historial-list');
+  const empty = document.getElementById('hist-empty');
+  document.getElementById('hist-count').textContent = historial.length + ' registros';
+  if (historial.length === 0) {
+    list.innerHTML = '';
+    empty.style.display = 'block';
+    return;
+  }
+  empty.style.display = 'none';
+  list.innerHTML = historial.map(p => `
+    <div class="hist-item" onclick="showDetail('${p.rowId}')">
+      <div class="hist-meta">${p.fecha} · ${p.proyecto.split('·')[0].trim()}</div>
+      <div class="hist-project">${p.proyecto.split('·')[1]?.trim() || p.proyecto}</div>
+      <div class="hist-equipo">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        ${p.equipo.map(t => t.nombre).join(', ')}
+      </div>
+      <div class="hist-tags">${p.trabajos.map(t => `<span class="tag">${t}</span>`).join('')}</div>
+    </div>
+  `).join('');
+}
+
+function showDetail(rowId) {
+  const p = historial.find(x => x.rowId === rowId);
+  if (!p) return;
+
+  const equipoHTML = p.equipo.map(t => `
+    <div class="avatar-pill">
+      <div class="av${t.usuario === currentUser.usuario ? ' self' : ''}">${t.iniciales}</div>
+      ${t.nombre}${t.usuario === currentUser.usuario ? ' (tú)' : ''}
+    </div>`).join('');
+
+  const trabajosHTML = p.trabajos.map(t => `<span class="tag">${t}</span>`).join('');
+  const matsHTML = p.materiales?.length
+    ? `<table class="mat-table">${p.materiales.map(m => `<tr><td>${m.desc}</td><td>${m.qty}</td></tr>`).join('')}</table>`
+    : '<span style="font-size:13px;color:var(--text3);">Sin materiales registrados</span>';
+  const obsHTML = p.obs
+    ? `<div style="font-size:14px;color:var(--text);line-height:1.6;">${p.obs}</div>`
+    : '<span style="font-size:13px;color:var(--text3);">Sin observaciones</span>';
+
+  // Verificar si el parte es de hoy para permitir borrado
+  const parteDate = new Date(p.fecha).toDateString();
+  const today = new Date().toDateString();
+  const esDeHoy = parteDate === today;
+
+  let botonesHTML = `
+    <button class="btn-edit" onclick="editarParte('${rowId}')">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+      Editar este parte
+    </button>`;
+  
+  if (esDeHoy) {
+    botonesHTML += `
+    <button class="btn-delete" onclick="borrarParteConfirmado('${rowId}')" style="background:#e74c3c;margin-top:12px;margin-bottom:0;color:white;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h12zM10 11v6M14 11v6"/></svg>
+      Borrar este parte
+    </button>`;
+  } else if (currentUser.rol === 'admin') {
+    botonesHTML += `
+    <button class="btn-delete" onclick="borrarParteConfirmado('${rowId}')" style="background:#c0392b;margin-top:12px;margin-bottom:0;color:white;">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6h12zM10 11v6M14 11v6"/></svg>
+      Borrar (solo admin)
+    </button>`;
+  }
+
+  document.getElementById('detalle-content').innerHTML = `
+    <div style="margin-bottom:4px;"><span style="font-size:13px;color:var(--text2);">${p.fecha}</span></div>
+    <div style="font-size:18px;font-weight:600;color:var(--text);margin-bottom:20px;">${p.proyecto}</div>
+    <div class="detail-section"><div class="detail-lbl">Equipo en obra</div><div class="avatar-row">${equipoHTML}</div></div>
+    <div class="detail-section" style="margin-top:16px;"><div class="detail-lbl">Trabajos realizados</div><div class="hist-tags">${trabajosHTML}</div></div>
+    <div class="detail-section" style="margin-top:16px;"><div class="detail-lbl">Observaciones</div>${obsHTML}</div>
+    <div class="detail-section" style="margin-top:16px;"><div class="detail-lbl">Materiales</div>${matsHTML}</div>
+    ${botonesHTML}
+    <div style="height:24px;"></div>
+  `;
+  document.getElementById('panel-lista').style.display = 'none';
+  document.getElementById('panel-detalle').style.display = 'block';
+}
+
+function backToLista() {
+  document.getElementById('panel-detalle').style.display = 'none';
+  document.getElementById('panel-lista').style.display = 'block';
+}
+
+// ══════════════════════════════════════
+// EDITAR PARTE DESDE HISTORIAL
+// ══════════════════════════════════════
+function editarParte(rowId) {
+  const p = historial.find(x => x.rowId === rowId);
+  if (!p) return;
+  
+  // Validar que sea del mismo día si no es admin
+  if (currentUser.rol !== 'admin') {
+    const parteDate = new Date(p.fecha).toDateString();
+    const today = new Date().toDateString();
+    if (parteDate !== today) {
+      alert('⚠️ Solo puedes editar partes del mismo día. Este parte es de otro día.');
+      return;
+    }
+  }
+  
+  resetForm();
+  editingId = rowId;
+
+  // Proyecto
+  const sel = document.getElementById('form-proyecto');
+  document.getElementById('form-proyecto').value = p.proyecto;
+
+  // Equipo (sin el propio usuario)
+  p.equipo.filter(t => t.usuario !== currentUser.usuario).forEach(t => {
+    const val = `${t.usuario}|${t.nombre}|${t.iniciales}`;
+    addedTecnicos.add(val);
+    const chip = document.createElement('div');
+    chip.className = 'chip';
+    chip.dataset.val = val;
+    chip.innerHTML = `<div class="chip-avatar">${t.iniciales}</div>${t.nombre}<button class="chip-remove" onclick="removeTecnico(this,'${val}')">×</button>`;
+    document.getElementById('equipo-chips').appendChild(chip);
+    const opt = document.querySelector(`#select-tecnico option[value="${val}"]`);
+    if (opt) opt.disabled = true;
+  });
+
+  // Trabajos
+  document.querySelectorAll('.check-item').forEach(el => {
+    if (p.trabajos.includes(el.dataset.trabajo)) el.classList.add('active');
+  });
+
+  // Observaciones
+  document.getElementById('form-obs').value = p.obs || '';
+
+  // Materiales
+  (p.materiales || []).forEach(m => addMat(m.desc, m.qty));
+
+  // UI
+  document.getElementById('edit-banner').style.display = 'flex';
+  document.getElementById('edit-fecha-banner').textContent = p.fecha;
+  document.getElementById('btn-guardar').textContent = 'Guardar cambios';
+  document.getElementById('btn-cancelar').style.display = 'block';
+  document.getElementById('topbar-title').textContent = 'Editando parte';
+
+  switchTab('nuevo');
+  window.scrollTo(0, 0);
+}
+
+// ══════════════════════════════════════
+// UTILIDADES
+// ══════════════════════════════════════
+function hoyFormatted() {
+  return new Date().toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' });
+}
+
+async function gas(payload) {
+  const res = await fetch(GAS_URL, {
+    method: 'POST',
+    body: JSON.stringify(payload)
+  });
+  if (!res.ok) throw new Error('HTTP ' + res.status);
+  return res.json();
+}
+
+// ══════════════════════════════════════
+// PWA · Service Worker + Install Prompt
+// ══════════════════════════════════════
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./sw.js')
+      .then(r => console.log('SW OK:', r.scope))
+      .catch(e => console.warn('SW error:', e));
+  });
+}
+
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  if (!window.matchMedia('(display-mode: standalone)').matches) {
+    showInstallBanner();
+  }
+});
+
+function showInstallBanner() {
+  if (sessionStorage.getItem('installBannerDismissed')) return;
+  const style = document.createElement('style');
+  style.textContent = '@keyframes slideUp{from{transform:translateY(80px);opacity:0}to{transform:translateY(0);opacity:1}}';
+  document.head.appendChild(style);
+  const b = document.createElement('div');
+  b.id = 'install-banner';
+  b.style.cssText = 'position:fixed;bottom:16px;left:16px;right:16px;z-index:9999;background:#0F2E4A;color:white;border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;box-shadow:0 8px 32px rgba(0,0,0,0.3);font-family:DM Sans,sans-serif;font-size:14px;animation:slideUp 0.3s ease;';
+  b.innerHTML = '<div style="width:40px;height:40px;border-radius:10px;background:rgba(255,255,255,0.12);display:flex;align-items:center;justify-content:center;flex-shrink:0;"><svg width=\"20\" height=\"20\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"white\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\"><path d=\"M12 2L2 7l10 5 10-5-10-5z\"/><path d=\"M2 17l10 5 10-5\"/><path d=\"M2 12l10 5 10-5\"/></svg></div><div style=\"flex:1;\"><div style=\"font-weight:600;margin-bottom:1px;\">Instalar app</div><div style=\"font-size:12px;opacity:0.7;\">Añadir Parte Diario a pantalla de inicio</div></div><button onclick=\"installApp()\" style=\"background:#2A7DE1;color:white;border:none;border-radius:8px;padding:8px 14px;font-size:13px;font-weight:600;cursor:pointer;font-family:inherit;\">Instalar</button><button onclick=\"dismissBanner()\" style=\"background:none;border:none;color:rgba(255,255,255,0.5);font-size:22px;cursor:pointer;padding:0;line-height:1;margin-left:4px;\">×</button>';
+  document.body.appendChild(b);
+}
+
+async function installApp() {
+  if (!deferredPrompt) return;
+  deferredPrompt.prompt();
+  await deferredPrompt.userChoice;
+  deferredPrompt = null;
+  dismissBanner();
+}
+
+function dismissBanner() {
+  sessionStorage.setItem('installBannerDismissed', '1');
+  const b = document.getElementById('install-banner');
+  if (b) b.remove();
+}
+
+window.addEventListener('appinstalled', () => dismissBanner());
+
+// ══════════════════════════════════════
+// iOS · Detección y modal de instalación
+// ══════════════════════════════════════
+function isIos() {
+  return /iphone|ipad|ipod/i.test(navigator.userAgent) ||
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
+function isInStandaloneMode() {
+  return window.matchMedia('(display-mode: standalone)').matches ||
+    window.navigator.standalone === true;
+}
+
+window.addEventListener('load', () => {
+  if (isIos() && !isInStandaloneMode() && !localStorage.getItem('iosModalDismissed')) {
+    setTimeout(showIosModal, 2500);
+  }
+});
+
+function showIosModal() {
+  const modal = document.getElementById('ios-install-modal');
+  if (modal) modal.style.display = 'flex';
+}
+
+function dismissIosModal() {
+  const modal = document.getElementById('ios-install-modal');
+  if (modal) modal.style.display = 'none';
+  localStorage.setItem('iosModalDismissed', '1');
+}
+
+document.getElementById('ios-install-modal')?.addEventListener('click', function(e) {
+  if (e.target === this) dismissIosModal();
+});
+
+// ══════════════════════════════════════
+// BORRAR PARTE
+// ══════════════════════════════════════
+async function borrarParteConfirmado(rowId) {
+  const p = historial.find(x => x.rowId === rowId);
+  if (!p) return;
+
+  // Mostrar confirmación
+  const parteDate = new Date(p.fecha).toDateString();
+  const today = new Date().toDateString();
+  const esDeHoy = parteDate === today;
+  
+  let confirmMsg = `¿Estás seguro de que quieres borrar este parte del día ${p.fecha}?`;
+  if (!esDeHoy && currentUser.rol !== 'admin') {
+    alert('⚠️ Solo puedes borrar partes del mismo día.');
+    return;
+  }
+  
+  if (!esDeHoy && currentUser.rol === 'admin') {
+    confirmMsg += '\n\n(Este parte es de otro día. Solo puedes borrarlo porque eres admin.)';
+  }
+  
+  if (!confirm(confirmMsg + '\n\nEsta acción no se puede deshacer.')) return;
+
+  try {
+    const res = await gas({
+      action: 'borrarParte',
+      rowId,
+      usuarioActual: currentUser.usuario,
+      rolActual: currentUser.rol
+    });
+
+    if (res.ok) {
+      // Recargar el historial
+      await cargarHistorial();
+      backToLista();
+      show('screen-success');
+      document.getElementById('success-title').textContent = 'Parte borrado';
+      document.getElementById('success-msg').textContent = 'El parte se ha eliminado correctamente.';
+    } else {
+      alert('Error: ' + (res.error || 'No se pudo borrar el parte'));
+    }
+  } catch(e) {
+    alert('Error al borrar. Intenta de nuevo: ' + e.message);
+  }
+}
+
+</script>
+
+<!-- iOS Install Modal -->
+<div id="ios-install-modal" style="display:none; position:fixed; inset:0; z-index:10000; background:rgba(0,0,0,0.6); align-items:flex-end; justify-content:center;">
+  <div style="background:white; border-radius:20px 20px 0 0; padding:24px 20px 36px; width:100%; max-width:480px; font-family:'DM Sans',sans-serif;">
+    <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:18px;">
+      <div style="display:flex; align-items:center; gap:12px;">
+        <div style="width:44px;height:44px;border-radius:10px;background:#0F2E4A;display:flex;align-items:center;justify-content:center;">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+        </div>
+        <div>
+          <div style="font-size:15px;font-weight:600;color:#0D1B2A;">Instalar Parte Diario</div>
+          <div style="font-size:12px;color:#5A6A7A;">Añadir a pantalla de inicio</div>
+        </div>
+      </div>
+      <button onclick="dismissIosModal()" style="background:none;border:none;font-size:22px;color:#9AAABB;cursor:pointer;padding:0;line-height:1;">×</button>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:14px;">
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div style="width:36px;height:36px;border-radius:50%;background:#E6F1FB;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:600;color:#185FA5;font-size:14px;">1</div>
+        <div style="font-size:14px;color:#0D1B2A;">Pulsa el botón <strong>Compartir</strong>
+          <svg style="display:inline;vertical-align:middle;margin-left:4px;" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#2A7DE1" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/><polyline points="16 6 12 2 8 6"/><line x1="12" y1="2" x2="12" y2="15"/></svg>
+          en la barra inferior de Safari
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div style="width:36px;height:36px;border-radius:50%;background:#E6F1FB;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:600;color:#185FA5;font-size:14px;">2</div>
+        <div style="font-size:14px;color:#0D1B2A;">Desplázate y pulsa <strong>"Añadir a pantalla de inicio"</strong>
+          <svg style="display:inline;vertical-align:middle;margin-left:4px;" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#2A7DE1" stroke-width="2" stroke-linecap="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div style="width:36px;height:36px;border-radius:50%;background:#E6F1FB;display:flex;align-items:center;justify-content:center;flex-shrink:0;font-weight:600;color:#185FA5;font-size:14px;">3</div>
+        <div style="font-size:14px;color:#0D1B2A;">Pulsa <strong>"Añadir"</strong> — el icono aparecerá en tu pantalla de inicio</div>
+      </div>
+    </div>
+
+    <button onclick="dismissIosModal()" style="width:100%;margin-top:22px;background:#0F2E4A;color:white;border:none;border-radius:10px;padding:13px;font-size:15px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;">Entendido</button>
+  </div>
+</div>
+</body>
+</html>
