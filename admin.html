@@ -1245,6 +1245,31 @@
     notif.textContent = msg;
     document.body.appendChild(notif);
     setTimeout(() => notif.remove(), 3000);
+  }async function borrarParteAdmin(rowId) {
+    if (!confirm('¿Estás seguro de que quieres borrar este parte?')) return;
+    
+    try {
+      const res = await fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'borrarParte',
+          rowId: rowId,
+          usuarioActual: currentUser.usuario,
+          rolActual: 'admin'
+        })
+      });
+      const data = await res.json();
+      
+      if (data.ok) {
+        closeModalDirect();
+        alert('Parte borrado correctamente');
+        loadPartes();
+      } else {
+        alert('Error: ' + (data.error || 'No se pudo borrar'));
+      }
+    } catch(e) {
+      alert('Error al borrar: ' + e.message);
+    }
   }
 </script>
 
