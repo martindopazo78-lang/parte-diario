@@ -455,7 +455,6 @@
   }
 
   thead th:hover { color: var(--text2); }
-
   thead th.sorted { color: var(--accent); }
 
   tbody tr {
@@ -465,7 +464,6 @@
   }
 
   tbody tr:last-child { border-bottom: none; }
-
   tbody tr:hover { background: var(--surface2); }
 
   tbody td {
@@ -521,6 +519,28 @@
     font-size: 12px;
     color: var(--text2);
     max-width: 180px;
+  }
+
+  /* Botón borrar en modal */
+  .btn-danger {
+    background: rgba(239,68,68,0.1);
+    border: 1px solid rgba(239,68,68,0.3);
+    color: #fca5a5;
+    border-radius: 7px;
+    padding: 9px 20px;
+    font-family: var(--sans);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-top: 24px;
+    width: 100%;
+  }
+
+  .btn-danger:hover {
+    background: rgba(239,68,68,0.2);
+    border-color: rgba(239,68,68,0.5);
+    color: #fff;
   }
 
   /* Detail modal */
@@ -794,6 +814,7 @@
 </div>
 
 <script>
+  // ✅ URL CORRECTA DEL GAS
   const GAS_URL = 'https://script.google.com/macros/s/AKfycbwGwVrBs60Z9NMpLxpvUZy6puz9B_MGmObGTfHGX9r2g7Isf_DGuUrilStjw4m5fZni-A/exec';
 
   let allPartes = [];
@@ -801,6 +822,7 @@
   let currentUser = null;
   let sortCol = null;
   let sortAsc = true;
+  let currentParteIdx = null; // para borrar desde modal
 
   // ── LOGIN ──
   document.getElementById('login-pass').addEventListener('keydown', e => {
@@ -836,7 +858,7 @@
           btn.disabled = false;
           return;
         }
-        currentUser = { usuario, nombre: data.user.nombre };
+        currentUser = { usuario, nombre: data.user.nombre, rol: data.user.rol };
         document.getElementById('header-user').textContent = data.user.nombre;
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('app').style.display = 'block';
@@ -940,7 +962,6 @@
 
   function parseDate(str) {
     if (!str) return null;
-    // Supports DD/MM/YYYY or YYYY-MM-DD
     if (str.includes('/')) {
       const [d,m,y] = str.split('/');
       return new Date(y, m-1, d);
@@ -1008,7 +1029,6 @@
         return sortAsc ? va.localeCompare(vb) : vb.localeCompare(va);
       });
     } else {
-      // Default: most recent first
       sorted.sort((a, b) => {
         const da = parseDate(a.fecha) || new Date(0);
         const db = parseDate(b.fecha) || new Date(0);
@@ -1016,8 +1036,7 @@
       });
     }
 
-    let html = `<table>
-      <thead><tr>`;
+    let html = `<table><thead><tr>`;
     COLS.forEach(c => {
       const isSorted = sortCol === c.key;
       html += `<th class="${isSorted ? 'sorted' : ''}" onclick="sortBy('${c.key}')">
@@ -1026,11 +1045,12 @@
     });
     html += `</tr></thead><tbody>`;
 
-    sorted.forEach((p, i) => {
+    sorted.forEach((p) => {
       const trabajosArr = parseList(p.trabajos);
       const equipoArr = parseList(p.equipo);
+      const idx = allPartes.indexOf(p);
 
-      html += `<tr onclick="openModal(${allPartes.indexOf(p)})">
+      html += `<tr onclick="openModal(${idx})">
         <td class="td-fecha">${formatFecha(p.fecha)}</td>
         <td class="td-tecnico">${esc(p.tecnico)}</td>
         <td class="td-proyecto">${esc(p.proyecto)}</td>
@@ -1059,12 +1079,12 @@
   function openModal(idx) {
     const p = allPartes[idx];
     if (!p) return;
+    currentParteIdx = idx;
 
     const trabajosArr = parseList(p.trabajos);
     const equipoArr = parseList(p.equipo);
 
-    document.getElementById('modal-title').textContent =
-      `Parte — ${p.tecnico}`;
+    document.getElementById('modal-title').textContent = `Parte — ${p.tecnico}`;
     document.getElementById('modal-meta').textContent =
       `${formatFecha(p.fecha)} · ${p.proyecto || 'Sin proyecto'}`;
 
@@ -1097,30 +1117,45 @@
         <div class="detail-label">Materiales</div>
         <div class="detail-value">${esc(p.materiales)}</div>
       </div>` : ''}
-      <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border);">
-        <button onclick="borrarParteAdmin('${p.rowId}')" style="width: 100%; padding: 12px 16px; background: var(--red); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: var(--sans); transition: background 0.2s;" onmouseover="this.style.background='#cc0000'" onmouseout="this.style.background='var(--red)'">
-          🗑️ Borrar este parte
-        </button>
-      </div>
-    `;        <button onclick="borrarParteAdmin('${esc(p.rowId)}')" style="
-          width: 100%;
-          padding: 12px 16px;
-          background: var(--red);
-          color: white;
-          border: none;
-          border-radius: 8px;
-          font-size: 14px;
-          font-weight: 500;
-          cursor: pointer;
-          font-family: var(--sans);
-          transition: background 0.2s;
-        " onmouseover="this.style.background='#cc0000'" onmouseout="this.style.background='var(--red)'">
-          🗑️ Borrar este parte
-        </button>
-      </div>
+      <button class="btn-danger" onclick="borrarParteAdmin()">🗑️ Borrar este parte</button>
     `;
 
     document.getElementById('modal').classList.add('open');
+  }
+
+  // ── BORRAR PARTE (ADMIN) ──
+  async function borrarParteAdmin() {
+    const p = allPartes[currentParteIdx];
+    if (!p) return;
+
+    const confirmar = confirm(`¿Borrar el parte de ${p.tecnico} del ${formatFecha(p.fecha)}?\n\nEsta acción no se puede deshacer.`);
+    if (!confirmar) return;
+
+    try {
+      const res = await fetch(GAS_URL, {
+        method: 'POST',
+        body: JSON.stringify({
+          action: 'borrarParte',
+          rowId: p.rowId,
+          usuarioActual: currentUser.usuario,
+          rolActual: 'admin'
+        })
+      });
+      const data = await res.json();
+
+      if (data.ok) {
+        closeModalDirect();
+        allPartes.splice(currentParteIdx, 1);
+        filteredPartes = filteredPartes.filter((_, i) => i !== currentParteIdx);
+        updateStats();
+        renderTable();
+        currentParteIdx = null;
+      } else {
+        alert('Error al borrar: ' + (data.error || 'desconocido'));
+      }
+    } catch (e) {
+      alert('Error de conexión al intentar borrar.');
+    }
   }
 
   function closeModal(e) {
@@ -1178,98 +1213,6 @@
     const d = parseDate(str);
     if (!d || isNaN(d)) return str;
     return d.toLocaleDateString('es-ES', { day:'2-digit', month:'2-digit', year:'numeric' });
-  }
-
-  // ── BORRAR PARTE (SOLO ADMIN) ──
-  async function borrarParteAdmin(rowId) {
-    const p = allPartes.find(x => x.rowId === rowId);
-    if (!p) return;
-
-    const confirmMsg = `¿Borrar el parte de ${p.tecnico} del ${p.fecha}?\n\nProyecto: ${p.proyecto}\n\nEsta acción no se puede deshacer.`;
-    
-    if (!confirm(confirmMsg)) return;
-
-    const btnDelete = event?.target;
-    if (btnDelete) {
-      btnDelete.disabled = true;
-      btnDelete.textContent = 'Borrando...';
-    }
-
-    try {
-      const res = await fetch(GAS_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          action: 'borrarParte',
-          rowId,
-          usuarioActual: currentUser.usuario,
-          rolActual: currentUser.rol
-        })
-      });
-
-      const data = await res.json();
-
-      if (data.ok) {
-        closeModalDirect();
-        // Recargar tabla
-        await cargarPartes();
-        showNotification('Parte borrado correctamente', 'success');
-      } else {
-        alert('Error: ' + (data.error || 'No se pudo borrar'));
-      }
-    } catch(e) {
-      alert('Error al borrar: ' + e.message);
-    } finally {
-      if (btnDelete) {
-        btnDelete.disabled = false;
-        btnDelete.textContent = '🗑️ Borrar este parte';
-      }
-    }
-  }
-
-  // Notification helper
-  function showNotification(msg, type = 'info') {
-    const notif = document.createElement('div');
-    notif.style.cssText = `
-      position: fixed;
-      top: 20px;
-      right: 20px;
-      padding: 12px 16px;
-      background: ${type === 'success' ? 'var(--green)' : 'var(--accent)'};
-      color: white;
-      border-radius: 8px;
-      font-size: 14px;
-      z-index: 9999;
-      animation: slideIn 0.3s ease;
-    `;
-    notif.textContent = msg;
-    document.body.appendChild(notif);
-    setTimeout(() => notif.remove(), 3000);
-  }async function borrarParteAdmin(rowId) {
-    if (!confirm('¿Estás seguro de que quieres borrar este parte?')) return;
-    
-    try {
-      const res = await fetch(GAS_URL, {
-        method: 'POST',
-        body: JSON.stringify({
-          action: 'borrarParte',
-          rowId: rowId,
-          usuarioActual: currentUser.usuario,
-          rolActual: 'admin'
-        })
-      });
-      const data = await res.json();
-      
-      if (data.ok) {
-        closeModalDirect();
-        alert('Parte borrado correctamente');
-        loadPartes();
-      } else {
-        alert('Error: ' + (data.error || 'No se pudo borrar'));
-      }
-    } catch(e) {
-      alert('Error al borrar: ' + e.message);
-    }
   }
 </script>
 
