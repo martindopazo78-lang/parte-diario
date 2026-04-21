@@ -1098,7 +1098,11 @@
         <div class="detail-value">${esc(p.materiales)}</div>
       </div>` : ''}
       <div style="margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--border);">
-        <button onclick="borrarParteAdmin('${esc(p.rowId)}')" style="
+        <button onclick="borrarParteAdmin('${p.rowId}')" style="width: 100%; padding: 12px 16px; background: var(--red); color: white; border: none; border-radius: 8px; font-size: 14px; font-weight: 500; cursor: pointer; font-family: var(--sans); transition: background 0.2s;" onmouseover="this.style.background='#cc0000'" onmouseout="this.style.background='var(--red)'">
+          🗑️ Borrar este parte
+        </button>
+      </div>
+    `;        <button onclick="borrarParteAdmin('${esc(p.rowId)}')" style="
           width: 100%;
           padding: 12px 16px;
           background: var(--red);
